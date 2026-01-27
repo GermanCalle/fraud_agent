@@ -1,0 +1,50 @@
+services:
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./fraud_detection.db
+      - DEBUG=true
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+    env_file:
+      - ./back/.env
+    volumes:
+      - ./back:/app
+      - ./back/fraud_detection.db:/app/fraud_detection.db
+    depends_on:
+      - redis
+    networks:
+      - trace-fraud-network
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - trace-fraud-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6378:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - trace-fraud-network
+
+networks:
+  trace-fraud-network:
+    driver: bridge
+
+volumes:
+  redis_data:
