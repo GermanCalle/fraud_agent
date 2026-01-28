@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fraud Detection Frontend 🖥️
 
-## Getting Started
+Interfaz de usuario moderna para el Sistema de Detección de Fraude Multi-Agente. Permite visualizar el análisis de transacciones, gestionar la cola de revisión humana (HITL) y explorar la trazabilidad de las decisiones tomadas por la IA.
 
-First, run the development server:
+## 🚀 Inicio Rápido
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Requisitos
+
+- Node.js 18+
+- Backend en ejecución (por defecto en `http://localhost:8000`)
+
+### Instalación
+
+1. **Instalar dependencias:**
+
+    ```bash
+    npm install
+    ```
+
+2. **Configurar entorno:**
+    Crea un archivo `.env.local` en la raíz de la carpeta `front`:
+
+    ```env
+    NEXT_PUBLIC_API_URL=http://localhost:8000
+    ```
+
+3. **Ejecutar en desarrollo:**
+
+    ```bash
+    npm run dev
+    ```
+
+4. **Abrir en el navegador:**
+    Visita [http://localhost:3000](http://localhost:3000)
+
+## ✨ Características Principales
+
+- **Dashboard de Transacciones:** Visualización en tiempo real de las últimas transacciones procesadas y su estado.
+- **Análisis Detallado:** Vista profunda de cada transacción incluyendo:
+  - Decisión final y nivel de confianza.
+  - Explicaciones para el cliente y para auditoría.
+  - Grafo de ruta de agentes (quién analizó qué).
+  - Señales de fraude detectadas.
+- **Human-In-The-Loop (HITL):** Interfaz dedicada para analistas de fraude donde pueden revisar casos marcados como "Challenge" o "Escalate" y tomar una decisión final.
+- **Audit Trail:** Línea de tiempo técnica que muestra el razonamiento paso a paso de cada agente involucrado.
+
+## 📁 Estructura del Proyecto
+
+```
+front/
+├── src/
+│   ├── app/             # Rutas y páginas (Next.js App Router)
+│   │   ├── hitl/        # Gestión de revisión humana
+│   │   └── page.tsx     # Dashboard principal
+│   ├── components/      # Componentes de UI reutilizables
+│   ├── lib/             # Cliente de API (Axios) y utilidades
+│   └── types/           # Definiciones de TypeScript
+├── public/              # Activos estáticos
+└── tailwind.config.ts   # Configuración de estilos
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Stack Tecnológico
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 16 (App Router)**
+- **TypeScript**
+- **Tailwind CSS**: Para un diseño moderno y responsive.
+- **Axios**: Cliente HTTP para comunicación con el backend.
+- **Lucide React**: Set de iconos.
+- **Recharts**: Visualización de datos y métricas.
+- **React Markdown**: Renderizado de explicaciones detalladas.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🐳 Docker
 
-## Learn More
+Si prefieres usar Docker desde la raíz del proyecto:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker-compose up -d
+```

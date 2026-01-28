@@ -36,12 +36,6 @@ async def decision_arbiter_agent(state: FraudDetectionState) -> FraudDetectionSt
         - confidence bajo = evidencia insuficiente, contradictoria o ambigua.
         - confidence NO representa riesgo, sino certeza epistemológica.
 
-        Lineamientos:
-        - Si hay múltiples violaciones claras de políticas -> aumenta risk_score.
-        - Si hay señales externas creíbles de fraude -> aumenta risk_score.
-        - Si hay señales contradictorias entre agentes -> reduce confidence.
-        - Si la evidencia es limitada, incompleta o ambigua -> reduce confidence.
-        - Si la evidencia es consistente entre múltiples agentes -> aumenta confidence.
 
         Responder EXCLUSIVAMENTE en formato JSON:
         {{
