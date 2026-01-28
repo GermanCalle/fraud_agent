@@ -14,8 +14,6 @@ services:
       - ./back/.env
     volumes:
       - ./back/fraud_detection.db:/app/fraud_detection.db
-    depends_on:
-      - redis
     networks:
       - trace-fraud-network
 
@@ -32,18 +30,6 @@ services:
     networks:
       - trace-fraud-network
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6378:6379" # because my port is already in use :D
-    volumes:
-      - redis_data:/data
-    networks:
-      - trace-fraud-network
-
 networks:
   trace-fraud-network:
     driver: bridge
-
-volumes:
-  redis_data:

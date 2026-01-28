@@ -11,15 +11,15 @@ interface TransactionFormProps {
 
 export default function TransactionForm({ onSuccess, onClose }: TransactionFormProps) {
   const [formData, setFormData] = useState<TransactionInput>({
-    transaction_id: `TX-${Math.floor(Math.random() * 1000000)}`,
-    customer_id: 'CUST-001',
-    amount: 100.00,
-    currency: 'USD',
-    country: 'US',
+    transaction_id: 'T-1001',
+    customer_id: 'CU-001',
+    amount: 1800,
+    currency: 'PEN',
+    country: 'PE',
     channel: 'web',
-    device_id: 'DEV-99',
-    timestamp: new Date().toISOString(),
-    merchant_id: 'MERCH-001'
+    device_id: 'D-01',
+    timestamp: new Date().toISOString().split('.')[0], // Format: YYYY-MM-DDTHH:MM:SS
+    merchant_id: 'M-001'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,6 +83,26 @@ export default function TransactionForm({ onSuccess, onClose }: TransactionFormP
               />
             </div>
             <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-slate-500 ml-1">Merchant ID</label>
+              <input
+                name="merchant_id"
+                value={formData.merchant_id}
+                onChange={handleChange}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono text-sm"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-slate-500 ml-1">Device ID</label>
+              <input
+                name="device_id"
+                value={formData.device_id}
+                onChange={handleChange}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono text-sm"
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <label className="text-xs font-bold uppercase text-slate-500 ml-1">Amount</label>
               <input
                 type="number"
@@ -102,8 +122,8 @@ export default function TransactionForm({ onSuccess, onClose }: TransactionFormP
                 onChange={handleChange}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm"
               >
-                <option value="USD">USD</option>
                 <option value="PEN">PEN</option>
+                <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
                 <option value="MXN">MXN</option>
               </select>
@@ -132,6 +152,17 @@ export default function TransactionForm({ onSuccess, onClose }: TransactionFormP
                 <option value="pos">POS Terminal</option>
                 <option value="api">Backend API</option>
               </select>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-xs font-bold uppercase text-slate-500 ml-1">Timestamp</label>
+              <input
+                type="datetime-local"
+                name="timestamp"
+                value={formData.timestamp}
+                onChange={handleChange}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono text-sm text-white"
+                required
+              />
             </div>
           </div>
 
