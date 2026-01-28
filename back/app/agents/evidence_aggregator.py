@@ -3,7 +3,10 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from app.core.constants import EVIDENCE_AGGREGATOR_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.models.schemas import AgentEvidence, FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def evidence_aggregator_agent(state: FraudDetectionState) -> FraudDetectionState:
@@ -11,10 +14,10 @@ async def evidence_aggregator_agent(state: FraudDetectionState) -> FraudDetectio
     Consolida todas las evidencias recogidas hasta el momento.
     Prepara el resumen para el debate pro/con fraude.
     """
-    print("🤖 [Evidence Aggregator Agent] Consolidando evidencias...")
+    logger.info("🤖 [Evidence Aggregator Agent] Consolidando evidencias...")
 
     if not state.evidences:
-        print("⚠️ No hay evidencias para consolidar.")
+        logger.warning("⚠️ No hay evidencias para consolidar.")
         return state
 
     model = MAP_AGENT_MODEL[EVIDENCE_AGGREGATOR_AGENT_NAME]
@@ -49,7 +52,7 @@ async def evidence_aggregator_agent(state: FraudDetectionState) -> FraudDetectio
     try:
         response = await chain.ainvoke({"evidences": evidences_summary})
 
-        print("agent_name: Evidence Aggregator Agent", f"\n{response}")
+        logger.debug(f"agent_name: Evidence Aggregator Agent \n{response}")
 
         state.evidences.append(
             AgentEvidence(
@@ -63,6 +66,6 @@ async def evidence_aggregator_agent(state: FraudDetectionState) -> FraudDetectio
         state.agent_route.append("evidence_aggregator_agent")
 
     except Exception as e:
-        print(f"❌ Error en Evidence Aggregator Agent: {e}")
+        logger.error(f"❌ Error en Evidence Aggregator Agent: {e}")
 
     return state

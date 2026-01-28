@@ -3,15 +3,18 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from app.core.constants import BEHAVIORAL_PATTERN_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.data.loader import get_customer_behavior
 from app.models.schemas import AgentEvidence, AgentSignal, FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def behavioral_pattern_agent(state: FraudDetectionState) -> FraudDetectionState:
     """
     Compara la transacción actual con el perfil de comportamiento histórico del cliente.
     """
-    print(
+    logger.info(
         f"🤖 [Behavioral Pattern Agent] Analizando historial de {state.transaction.customer_id}..."
     )
 
@@ -19,7 +22,7 @@ async def behavioral_pattern_agent(state: FraudDetectionState) -> FraudDetection
     state.customer_behavior = behavior
 
     if not behavior:
-        print("⚠️ No hay historial para este cliente.")
+        logger.warning("⚠️ No hay historial para este cliente.")
         state.evidences.append(
             AgentEvidence(
                 agent_name="Behavioral Pattern Agent",
@@ -73,7 +76,7 @@ async def behavioral_pattern_agent(state: FraudDetectionState) -> FraudDetection
             }
         )
 
-        print("agent_name: Behavioral Pattern Agent", f"\n{response}")
+        logger.debug(f"agent_name: Behavioral Pattern Agent \n{response}")
 
         signals = [AgentSignal(**s) for s in response.get("signals", [])]
 
@@ -90,6 +93,6 @@ async def behavioral_pattern_agent(state: FraudDetectionState) -> FraudDetection
             state.signals.append(f"[BEHAVIOR] {s.description}")
 
     except Exception as e:
-        print(f"❌ Error en Behavioral Pattern Agent: {e}")
+        logger.error(f"❌ Error en Behavioral Pattern Agent: {e}")
 
     return state

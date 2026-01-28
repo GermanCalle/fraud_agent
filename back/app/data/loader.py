@@ -9,9 +9,12 @@ from pathlib import Path
 
 from sqlalchemy import select
 
+from app.core.logger import get_logger
 from app.db.models import CustomerBehaviorDB
 from app.db.session import AsyncSessionLocal, init_db
 from app.models.schemas import CustomerBehavior, FraudPolicy
+
+logger = get_logger(__name__)
 
 DATA_DIR = Path(__file__).parent
 
@@ -49,11 +52,11 @@ async def load_fraud_policies() -> list[FraudPolicy]:
 
 async def seed_database():
     """Seed database with initial data"""
-    print("🌱 Seeding database...")
+    logger.info("🌱 Seeding database...")
 
     # Initialize database
     await init_db()
-    print("✅ Database initialized")
+    logger.info("✅ Database initialized")
 
     async with AsyncSessionLocal() as session:
         # Seed customer behavior
@@ -78,9 +81,9 @@ async def seed_database():
                 session.add(db_behavior)
 
         await session.commit()
-        print(f"✅ Seeded {len(behaviors)} customer behaviors")
+        logger.info(f"✅ Seeded {len(behaviors)} customer behaviors")
 
-    print("🎉 Database seeding complete!")
+    logger.info("🎉 Database seeding complete!")
 
 
 async def get_customer_behavior(customer_id: str) -> CustomerBehavior | None:

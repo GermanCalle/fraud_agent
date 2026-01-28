@@ -6,15 +6,18 @@ from langchain_openai import OpenAIEmbeddings
 
 from app.core.constants import INTERNAL_POLICY_RAG_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.data.loader import load_fraud_policies
 from app.models.schemas import AgentEvidence, Citation, FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectionState:
     """
     Busca y aplica políticas internas de fraude mediante RAG con base vectorial local.
     """
-    print("🤖 [Internal Policy RAG Agent] Buscando políticas aplicables...")
+    logger.info("🤖 [Internal Policy RAG Agent] Buscando políticas aplicables...")
 
     policies = await load_fraud_policies()
     docs = [
@@ -26,7 +29,7 @@ async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectio
     vectorstore = FAISS.from_documents(docs, embeddings)
 
     query = get_better_query(state)
-    print(f"RAG query: `{query}`")
+    logger.debug(f"RAG query: `{query}`")
 
     relevant_docs = vectorstore.similarity_search(query, k=3)
 
@@ -76,8 +79,8 @@ async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectio
             }
         )
 
-        print(state.customer_behavior)
-        print("agent_name: Internal Policy RAG Agent", f"\n{response}")
+        logger.debug(f"Customer behavior: {state.customer_behavior}")
+        logger.debug(f"agent_name: Internal Policy RAG Agent \n{response}")
 
         citations = []
         for ap in response.get("applied_policies", []):
@@ -107,7 +110,7 @@ async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectio
         state.agent_route.append("internal_policy_rag_agent")
 
     except Exception as e:
-        print(f"❌ Error en Internal Policy RAG Agent: {e}")
+        logger.error(f"❌ Error en Internal Policy RAG Agent: {e}")
 
     return state
 

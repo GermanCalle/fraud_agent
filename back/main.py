@@ -5,7 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import hitl, transactions
 from app.core.config import settings
+from app.core.logger import setup_logging
 from app.db.session import init_db
+
+# Initialize logging
+setup_logging()
 
 
 @asynccontextmanager

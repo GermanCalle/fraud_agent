@@ -2,14 +2,17 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.models.schemas import AgentEvidence, AgentSignal, FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def transaction_context_agent(state: FraudDetectionState) -> FraudDetectionState:
     """
     Analiza señales internas inmediatas: monto, horario, país y dispositivo.
     """
-    print("🤖 [Transaction Context Agent] Analizando señales básicas...")
+    logger.info("🤖 [Transaction Context Agent] Analizando señales básicas...")
 
     tx = state.transaction
     llm = get_llm()
@@ -44,7 +47,7 @@ async def transaction_context_agent(state: FraudDetectionState) -> FraudDetectio
     try:
         response = await chain.ainvoke({"transaction": tx.model_dump_json()})
 
-        print("agent_name: Transaction Context Agent", f"\n{response}")
+        logger.debug(f"agent_name: Transaction Context Agent \n{response}")
         signals = [AgentSignal(**s) for s in response.get("signals", [])]
 
         evidence = AgentEvidence(
@@ -60,7 +63,7 @@ async def transaction_context_agent(state: FraudDetectionState) -> FraudDetectio
             state.signals.append(f"[{s.severity.upper()}] {s.description}")
 
     except Exception as e:
-        print(f"❌ Error en Transaction Context Agent: {e}")
+        logger.error(f"❌ Error en Transaction Context Agent: {e}")
         state.signals.append(f"Error en análisis de contexto: {str(e)}")
 
     return state

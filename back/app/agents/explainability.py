@@ -3,14 +3,17 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from app.core.constants import EXPLAINABILITY_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.models.schemas import FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def explainability_agent(state: FraudDetectionState) -> FraudDetectionState:
     """
     Genera explicaciones claras para el cliente y reportes detallados para auditoría.
     """
-    print("📝 [Explainability Agent] Generando explicaciones y reporte de auditoría...")
+    logger.info("📝 [Explainability Agent] Generando explicaciones y reporte de auditoría...")
 
     model = MAP_AGENT_MODEL[EXPLAINABILITY_AGENT_NAME]
     llm = get_llm(model)
@@ -53,7 +56,7 @@ async def explainability_agent(state: FraudDetectionState) -> FraudDetectionStat
             }
         )
 
-        print("agent_name: Explain Agent", f"\n{response}")
+        logger.debug(f"agent_name: Explain Agent \n{response}")
 
         state.explanation_customer = response.get("explanation_customer", "")
         state.explanation_audit = response.get("explanation_audit", "")
@@ -61,6 +64,6 @@ async def explainability_agent(state: FraudDetectionState) -> FraudDetectionStat
         state.agent_route.append("explainability_agent")
 
     except Exception as e:
-        print(f"❌ Error en Explainability Agent: {e}")
+        logger.error(f"❌ Error en Explainability Agent: {e}")
 
     return state

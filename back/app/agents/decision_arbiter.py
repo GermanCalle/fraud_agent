@@ -2,7 +2,10 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.models.schemas import AgentEvidence, FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def decision_arbiter_agent(state: FraudDetectionState) -> FraudDetectionState:
@@ -10,7 +13,7 @@ async def decision_arbiter_agent(state: FraudDetectionState) -> FraudDetectionSt
     Analiza las evidencias y el debate para tomar una decisión final estructurada.
     """
 
-    print("⚖️ [Decision Arbiter Agent] Evaluando evidencias y debate para decisión final...")
+    logger.info("⚖️ [Decision Arbiter Agent] Evaluando evidencias y debate para decisión final...")
 
     llm = get_llm()
 
@@ -87,7 +90,7 @@ async def decision_arbiter_agent(state: FraudDetectionState) -> FraudDetectionSt
         state.agent_route.append("decision_arbiter_agent")
 
     except Exception as e:
-        print(f"❌ Error en Decision Arbiter Agent: {e}")
+        logger.error(f"❌ Error en Decision Arbiter Agent: {e}")
         state.decision = "ESCALATE_TO_HUMAN"
 
     return state

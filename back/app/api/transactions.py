@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.graph import fraud_graph
+from app.core.logger import get_logger
 from app.db.session import get_db
 from app.models.schemas import (
     FraudDetectionResult,
@@ -15,6 +16,7 @@ from app.models.schemas import (
 from app.services.db_service import TransactionService
 from app.services.reporting_service import ReportingService
 
+logger = get_logger(__name__)
 router = APIRouter()
 
 
@@ -49,7 +51,7 @@ async def analyze_transaction(tx_input: TransactionInput, db: AsyncSession = Dep
 
     initial_state = FraudDetectionState(transaction=tx_input, start_time=datetime.now(UTC))
 
-    print(f"🚀 Iniciando análisis de Agentes para {tx_input.transaction_id}...")
+    logger.info(f"🚀 Iniciando análisis de Agentes para {tx_input.transaction_id}...")
     final_state_dict = await fraud_graph.ainvoke(initial_state)
 
     final_state = FraudDetectionState(**final_state_dict)

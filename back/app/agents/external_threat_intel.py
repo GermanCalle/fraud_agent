@@ -5,19 +5,22 @@ from langchain_tavily import TavilySearch
 from app.core.config import settings
 from app.core.constants import EXTERNAL_THREAT_INTEL_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.models.schemas import AgentEvidence, AgentSignal, ExternalCitation, FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def external_threat_intel_agent(state: FraudDetectionState) -> FraudDetectionState:
     """
     Busca inteligencia de amenazas externa en la web usando Tavily.
     """
-    print(
+    logger.info(
         f"🤖 [External Threat Intel Agent] Buscando alertas externas para merchant {state.transaction.merchant_id}..."
     )
 
     if not settings.TAVILY_API_KEY:
-        print("⚠️ TAVILY_API_KEY no configurada. Saltando búsqueda externa.")
+        logger.warning("⚠️ TAVILY_API_KEY no configurada. Saltando búsqueda externa.")
         state.evidences.append(
             AgentEvidence(
                 agent_name="External Threat Intel Agent",
@@ -74,7 +77,7 @@ async def external_threat_intel_agent(state: FraudDetectionState) -> FraudDetect
             }
         )
 
-        print("agent_name: External Threat Intel Agent", f"\n{response}")
+        logger.debug(f"agent_name: External Threat Intel Agent \n{response}")
 
         citations = [ExternalCitation(**c) for c in response.get("citations", [])]
         signals = [AgentSignal(**s) for s in response.get("signals", [])]
@@ -95,6 +98,6 @@ async def external_threat_intel_agent(state: FraudDetectionState) -> FraudDetect
             state.signals.append(f"[EXTERNAL] {s.description}")
 
     except Exception as e:
-        print(f"❌ Error en External Threat Intel Agent: {e}")
+        logger.error(f"❌ Error en External Threat Intel Agent: {e}")
 
     return state

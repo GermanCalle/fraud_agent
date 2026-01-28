@@ -6,14 +6,17 @@ from app.core.constants import (
     MAP_AGENT_MODEL,
 )
 from app.core.llm import get_llm
+from app.core.logger import get_logger
 from app.models.schemas import AgentEvidence, FraudDetectionState
+
+logger = get_logger(__name__)
 
 
 async def debate_agents(state: FraudDetectionState) -> FraudDetectionState:
     """
     Simula un debate entre dos posturas: 'Pro-Fraud' y 'Pro-Customer'.
     """
-    print("🤖 [Debate Agents] Iniciando debate Pro vs Con...")
+    logger.info("🤖 [Debate Agents] Iniciando debate Pro vs Con...")
 
     evidences_text = "\n".join([f"- {ev.agent_name}: {ev.reasoning}" for ev in state.evidences])
 
@@ -51,8 +54,8 @@ async def debate_agents(state: FraudDetectionState) -> FraudDetectionState:
         fraud_argument = await fraud_chain.ainvoke({"evidences": evidences_text})
         customer_argument = await customer_chain.ainvoke({"evidences": evidences_text})
 
-        print("agent_name: Debate Agent (Pro-Fraud)", f"\n{fraud_argument}")
-        print("agent_name: Debate Agent (Pro-Customer)", f"\n{customer_argument}")
+        logger.debug(f"agent_name: Debate Agent (Pro-Fraud) \n{fraud_argument}")
+        logger.debug(f"agent_name: Debate Agent (Pro-Customer) \n{customer_argument}")
 
         state.evidences.append(
             AgentEvidence(
@@ -73,6 +76,6 @@ async def debate_agents(state: FraudDetectionState) -> FraudDetectionState:
         state.agent_route.append("debate_agents")
 
     except Exception as e:
-        print(f"❌ Error en Debate Agents: {e}")
+        logger.error(f"❌ Error en Debate Agents: {e}")
 
     return state
