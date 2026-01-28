@@ -1,0 +1,12 @@
+# Azure Configuration
+subscription_id = "your-azure-subscription-id"
+prefix          = "tracefraud"
+location        = "East US"
+
+# GitHub Configuration
+github_username = "your-github-username"
+github_pat      = "your-github-personal-access-token"
+
+# API Keys
+openai_api_key  = "your-openai-api-key"
+tavily_api_key  = "your-tavily-api-key"
