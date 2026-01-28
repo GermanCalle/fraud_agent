@@ -9,6 +9,28 @@ const api = axios.create({
   },
 });
 
+export interface Transaction {
+  id: string;
+  customer_id: string;
+  amount: number;
+  currency: string;
+  country: string;
+  channel: string;
+  device_id: string;
+  timestamp: string;
+  merchant_id: string;
+  decision?: string;
+  confidence?: number;
+  signals?: any;
+  explanation_customer?: string;
+  explanation_audit?: string;
+  agent_route?: string[];
+  citations_internal?: any[];
+  citations_external?: any[];
+  processing_time_ms?: number;
+  created_at: string;
+}
+
 export interface TransactionInput {
   transaction_id: string;
   customer_id: string;
@@ -45,6 +67,26 @@ export interface HITLItem {
   created_at: string;
 }
 
+export interface AuditTrail {
+  id: number;
+  transaction_id: string;
+  agent_name: string;
+  step_order: number;
+  input_data: any;
+  output_data: {
+    reasoning: string;
+    confidence: number;
+    signals: any[];
+  };
+  execution_time_ms: number;
+  timestamp: string;
+}
+
+export interface TransactionSummary {
+  transaction_id: string;
+  summary_text: string;
+}
+
 export const analyzeTransaction = async (data: TransactionInput) => {
   const response = await api.post<FraudDetectionResult>('/api/transactions/analyze', data);
   return response.data;
@@ -52,6 +94,26 @@ export const analyzeTransaction = async (data: TransactionInput) => {
 
 export const getHITLQueue = async () => {
   const response = await api.get<HITLItem[]>('/api/hitl/queue');
+  return response.data;
+};
+
+export const getTransactions = async () => {
+  const response = await api.get<Transaction[]>('/api/transactions');
+  return response.data;
+};
+
+export const getTransaction = async (transactionId: string) => {
+  const response = await api.get<Transaction>(`/api/transactions/${transactionId}`);
+  return response.data;
+};
+
+export const getAuditTrails = async (transactionId: string) => {
+  const response = await api.get<AuditTrail[]>(`/api/transactions/${transactionId}/audit-trails`);
+  return response.data;
+};
+
+export const getTransactionSummary = async (transactionId: string) => {
+  const response = await api.get<TransactionSummary>(`/api/transactions/${transactionId}/summary`);
   return response.data;
 };
 
