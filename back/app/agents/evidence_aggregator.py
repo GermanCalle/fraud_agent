@@ -1,6 +1,7 @@
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from app.core.constants import EVIDENCE_AGGREGATOR_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
 from app.models.schemas import AgentEvidence, FraudDetectionState
 
@@ -16,7 +17,8 @@ async def evidence_aggregator_agent(state: FraudDetectionState) -> FraudDetectio
         print("⚠️ No hay evidencias para consolidar.")
         return state
 
-    llm = get_llm(temperature=0)
+    model = MAP_AGENT_MODEL[EVIDENCE_AGGREGATOR_AGENT_NAME]
+    llm = get_llm(model)
 
     evidences_summary = ""
     for ev in state.evidences:
@@ -51,7 +53,7 @@ async def evidence_aggregator_agent(state: FraudDetectionState) -> FraudDetectio
 
         state.evidences.append(
             AgentEvidence(
-                agent_name="Evidence Aggregator Agent",
+                agent_name=EVIDENCE_AGGREGATOR_AGENT_NAME,
                 reasoning=response.get("executive_summary", "Consolidación de evidencias"),
                 confidence=1.0,
                 signals=[],

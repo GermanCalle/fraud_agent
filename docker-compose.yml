@@ -13,7 +13,6 @@ services:
     env_file:
       - ./back/.env
     volumes:
-      - ./back:/app
       - ./back/fraud_detection.db:/app/fraud_detection.db
     depends_on:
       - redis
@@ -36,7 +35,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6378:6379"
+      - "6378:6379" # because my port is already in use :D
     volumes:
       - redis_data:/data
     networks:

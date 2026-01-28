@@ -4,6 +4,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import OpenAIEmbeddings
 
+from app.core.constants import INTERNAL_POLICY_RAG_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
 from app.data.loader import load_fraud_policies
 from app.models.schemas import AgentEvidence, Citation, FraudDetectionState
@@ -25,7 +26,7 @@ async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectio
     vectorstore = FAISS.from_documents(docs, embeddings)
 
     query = get_better_query(state)
-    print("vector query", query)
+    print(f"RAG query: `{query}`")
 
     relevant_docs = vectorstore.similarity_search(query, k=3)
 
@@ -33,7 +34,8 @@ async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectio
         [f"- [{d.metadata['policy_id']}]: {d.page_content}" for d in relevant_docs]
     )
 
-    llm = get_llm(temperature=0)
+    model = MAP_AGENT_MODEL[INTERNAL_POLICY_RAG_AGENT_NAME]
+    llm = get_llm(model)
     prompt = ChatPromptTemplate.from_messages(
         [
             (
@@ -55,7 +57,7 @@ async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectio
                 {{ "policy_id": "string", "reason": "string", "violated": bool }}
             ],
             "reasoning": "string",
-            "confidence": float
+            "confidence": float (0-1)
         }}
         """,
             ),
@@ -94,7 +96,7 @@ async def internal_policy_rag_agent(state: FraudDetectionState) -> FraudDetectio
                         )
 
         evidence = AgentEvidence(
-            agent_name="Internal Policy RAG Agent",
+            agent_name=INTERNAL_POLICY_RAG_AGENT_NAME,
             citations=citations,
             reasoning=response.get("reasoning", "Cumplimiento de políticas internas vía RAG"),
             confidence=response.get("confidence", 0.9),

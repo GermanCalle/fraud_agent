@@ -30,6 +30,11 @@ class Transaction(Base):
     decision = Column(String(50), nullable=True)
     confidence = Column(Float, nullable=True)
     signals = Column(JSON, nullable=True)
+    explanation_customer = Column(Text, nullable=True)
+    explanation_audit = Column(Text, nullable=True)
+    agent_route = Column(JSON, nullable=True)
+    citations_internal = Column(JSON, nullable=True)
+    citations_external = Column(JSON, nullable=True)
     processing_time_ms = Column(Integer, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

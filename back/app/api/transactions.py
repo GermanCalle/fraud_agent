@@ -6,10 +6,37 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.graph import fraud_graph
 from app.db.session import get_db
-from app.models.schemas import FraudDetectionResult, FraudDetectionState, TransactionInput
+from app.models.schemas import (
+    FraudDetectionResult,
+    FraudDetectionState,
+    TransactionInput,
+    TransactionSummary,
+)
 from app.services.db_service import TransactionService
+from app.services.reporting_service import ReportingService
 
 router = APIRouter()
+
+
+@router.get("/")
+async def get_transactions(db: AsyncSession = Depends(get_db)):
+    return await TransactionService.get_transactions(db)
+
+
+@router.get("/{transaction_id}")
+async def get_transaction_details(transaction_id: str, db: AsyncSession = Depends(get_db)):
+    return await TransactionService.get_transaction(db, transaction_id)
+
+
+@router.get("/{transaction_id}/audit-trails")
+async def get_audit_trails_by_transaction(transaction_id: str, db: AsyncSession = Depends(get_db)):
+    return await TransactionService.get_audit_trails(db, transaction_id)
+
+
+@router.get("/{transaction_id}/summary", response_model=TransactionSummary)
+async def get_transaction_summary(transaction_id: str, db: AsyncSession = Depends(get_db)):
+    summary_text = await ReportingService.generate_audit_summary(db, transaction_id)
+    return TransactionSummary(transaction_id=transaction_id, summary_text=summary_text)
 
 
 @router.post("/analyze", response_model=FraudDetectionResult)
@@ -42,8 +69,3 @@ async def analyze_transaction(tx_input: TransactionInput, db: AsyncSession = Dep
         agent_route=final_state.agent_route,
         processing_time_ms=int((datetime.now(UTC) - final_state.start_time).total_seconds() * 1000),
     )
-
-
-@router.get("/{transaction_id}")
-async def get_transaction_details(transaction_id: str, db: AsyncSession = Depends(get_db)):
-    pass
