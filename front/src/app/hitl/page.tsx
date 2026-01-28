@@ -1,5 +1,6 @@
 "use client";
 
+import AuditTrailModal from '@/components/AuditTrailModal';
 import { getHITLQueue, HITLItem, submitHITLReview } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -7,6 +8,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
+  FileText,
   Filter,
   MessageSquare,
   Search,
@@ -20,6 +22,7 @@ export default function HITLQueuePage() {
   const [selectedItem, setSelectedItem] = useState<HITLItem | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAuditId, setShowAuditId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchQueue();
@@ -141,7 +144,16 @@ export default function HITLQueuePage() {
                 </div>
 
                 <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-700">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Audit Alert</h4>
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Audit Alert</h4>
+                    <button
+                      onClick={() => setShowAuditId(selectedItem.transaction_id)}
+                      className="flex items-center space-x-1 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <FileText className="h-3 w-3" />
+                      <span>View Full Trail</span>
+                    </button>
+                  </div>
                   <p className="text-sm leading-relaxed text-slate-300">
                     Agent consensus was inconclusive. Security node report indicates ambiguous behavior patterns and high-risk threshold crossing.
                   </p>
@@ -180,6 +192,13 @@ export default function HITLQueuePage() {
           </div>
         </div>
       </div>
+
+      {showAuditId && (
+        <AuditTrailModal
+          transactionId={showAuditId}
+          onClose={() => setShowAuditId(null)}
+        />
+      )}
     </div>
   );
 }

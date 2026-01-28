@@ -1,14 +1,13 @@
 "use client";
 
+import { cn } from '@/lib/utils';
+import { LayoutDashboard, ShieldAlert, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShieldAlert, LayoutDashboard, Users, Activity } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'HITL Queue', href: '/hitl', icon: Users },
-  { name: 'Monitoring', href: '/monitoring', icon: Activity },
 ];
 
 export default function Navbar() {
