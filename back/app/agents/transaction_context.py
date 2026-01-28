@@ -12,7 +12,7 @@ async def transaction_context_agent(state: FraudDetectionState) -> FraudDetectio
     print("🤖 [Transaction Context Agent] Analizando señales básicas...")
 
     tx = state.transaction
-    llm = get_llm(temperature=0)
+    llm = get_llm()
 
     prompt = ChatPromptTemplate.from_messages(
         [

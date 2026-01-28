@@ -27,6 +27,16 @@ class TransactionService:
         return db_tx
 
     @staticmethod
+    async def get_transaction(session: AsyncSession, transaction_id: str):
+        result = await session.execute(select(Transaction).where(Transaction.id == transaction_id))
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def get_transactions(session: AsyncSession):
+        result = await session.execute(select(Transaction))
+        return result.scalars().all()
+
+    @staticmethod
     async def update_analysis_results(session: AsyncSession, state: FraudDetectionState):
         stmt = (
             update(Transaction)
@@ -35,6 +45,17 @@ class TransactionService:
                 decision=state.decision,
                 confidence=state.confidence,
                 signals=state.signals,
+                explanation_customer=state.explanation_customer,
+                explanation_audit=state.explanation_audit,
+                agent_route=state.agent_route,
+                citations_internal=[
+                    c.model_dump() if hasattr(c, "model_dump") else c
+                    for c in state.citations_internal
+                ],
+                citations_external=[
+                    c.model_dump() if hasattr(c, "model_dump") else c
+                    for c in state.citations_external
+                ],
                 processing_time_ms=int(
                     (datetime.now(UTC) - state.start_time).total_seconds() * 1000
                 ),
@@ -66,6 +87,13 @@ class TransactionService:
             )
             session.add(audit)
         await session.commit()
+
+    @staticmethod
+    async def get_audit_trails(session: AsyncSession, transaction_id: str):
+        result = await session.execute(
+            select(AuditTrail).where(AuditTrail.transaction_id == transaction_id)
+        )
+        return result.scalars().all()
 
 
 class HITLService:

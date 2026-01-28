@@ -9,9 +9,10 @@ async def decision_arbiter_agent(state: FraudDetectionState) -> FraudDetectionSt
     """
     Analiza las evidencias y el debate para tomar una decisión final estructurada.
     """
+
     print("⚖️ [Decision Arbiter Agent] Evaluando evidencias y debate para decisión final...")
 
-    llm = get_llm(temperature=0)
+    llm = get_llm()
 
     debate_text = ""
     for ev in state.evidences:
@@ -25,21 +26,27 @@ async def decision_arbiter_agent(state: FraudDetectionState) -> FraudDetectionSt
                 """Eres el Árbitro Final de Decisiones en un sistema de detección de fraude.
         Tu tarea es evaluar las señales, la síntesis de evidencia y los argumentos del debate.
 
-        Debes elegir UNA de las siguientes decisiones:
-        - APPROVE: La transacción es legítima.
-        - CHALLENGE: Sospechosa, requiere validación extra (OTP, llamada).
-        - BLOCK: Fraude altamente probable, bloqueo inmediato.
-        - ESCALATE_TO_HUMAN: Señales contradictorias o ambigüedad alta.
+        Debes estimar:
 
-        Reglas de Decisión:
-        - Si hay señales externas (Web Search) de fraude y violación de políticas -> BLOCK.
-        - Si hay anomalías de comportamiento pero el historial es limpio -> CHALLENGE.
-        - Si la confianza es menor a 0.6 -> ESCALATE_TO_HUMAN.
+        - risk_score: Probabilidad estimada de que la transacción sea fraudulenta (0-1).
+        - confidence: Qué tan seguro estás de tu propio análisis, dada la calidad, cantidad y consistencia de la evidencia (0-1).
 
-        Responder en JSON:
+        Definiciones:
+        - risk_score alto = mayor probabilidad de fraude.
+        - confidence bajo = evidencia insuficiente, contradictoria o ambigua.
+        - confidence NO representa riesgo, sino certeza epistemológica.
+
+        Lineamientos:
+        - Si hay múltiples violaciones claras de políticas -> aumenta risk_score.
+        - Si hay señales externas creíbles de fraude -> aumenta risk_score.
+        - Si hay señales contradictorias entre agentes -> reduce confidence.
+        - Si la evidencia es limitada, incompleta o ambigua -> reduce confidence.
+        - Si la evidencia es consistente entre múltiples agentes -> aumenta confidence.
+
+        Responder EXCLUSIVAMENTE en formato JSON:
         {{
-            "decision": "APPROVE|CHALLENGE|BLOCK|ESCALATE_TO_HUMAN",
             "confidence": float (0-1),
+            "risk_score": float (0-1)
             "reasoning": "string"
         }}
         """,
@@ -55,12 +62,27 @@ async def decision_arbiter_agent(state: FraudDetectionState) -> FraudDetectionSt
 
     try:
         response = await chain.ainvoke(
-            {"debate": debate_text, "transaction": state.transaction.model_dump_json()}
+            {
+                "debate": debate_text,
+                "transaction": state.transaction.model_dump_json(),
+            }
         )
 
-        state.decision = response.get("decision", "ESCALATE_TO_HUMAN")
-        state.confidence = response.get("confidence", 0.5)
+        risk_score = response.get("risk_score", 0.5)
+        confidence = response.get("confidence", 0.5)
+        if confidence < 0.6:
+            state.decision = "ESCALATE_TO_HUMAN"
+        else:
+            if risk_score >= 0.85:
+                state.decision = "BLOCK"
+            elif risk_score >= 0.65:
+                state.decision = "ESCALATE_TO_HUMAN"
+            elif risk_score >= 0.35:
+                state.decision = "CHALLENGE"
+            else:
+                state.decision = "APPROVE"
 
+        state.confidence = confidence
         state.evidences.append(
             AgentEvidence(
                 agent_name="Decision Arbiter Agent",

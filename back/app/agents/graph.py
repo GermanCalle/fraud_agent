@@ -13,16 +13,6 @@ from app.agents import (
 from app.models.schemas import FraudDetectionState
 
 
-def should_escalate(state: FraudDetectionState):
-    """
-    Función condicional para determinar si el flujo debe ir a escala humana
-    o continuar con la explicación.
-    """
-    if state.decision == "ESCALATE_TO_HUMAN" or state.confidence < 0.3:
-        return "human_review"
-    return "explain"
-
-
 def create_fraud_detection_graph():
     """
     Crea y compila el flujo de agentes de detección de fraude.
@@ -45,16 +35,7 @@ def create_fraud_detection_graph():
     workflow.add_edge("threat_intel", "aggregator")
     workflow.add_edge("aggregator", "debate")
     workflow.add_edge("debate", "arbiter")
-
-    workflow.add_conditional_edges(
-        "arbiter",
-        should_escalate,
-        {
-            "human_review": END,
-            "explain": "explainability",
-        },
-    )
-
+    workflow.add_edge("arbiter", "explainability")
     workflow.add_edge("explainability", END)
 
     return workflow.compile()

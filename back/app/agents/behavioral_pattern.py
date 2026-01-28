@@ -1,6 +1,7 @@
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from app.core.constants import BEHAVIORAL_PATTERN_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
 from app.data.loader import get_customer_behavior
 from app.models.schemas import AgentEvidence, AgentSignal, FraudDetectionState
@@ -28,7 +29,8 @@ async def behavioral_pattern_agent(state: FraudDetectionState) -> FraudDetection
         )
         return state
 
-    llm = get_llm(temperature=0)
+    model = MAP_AGENT_MODEL[BEHAVIORAL_PATTERN_AGENT_NAME]
+    llm = get_llm(model)
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -50,7 +52,7 @@ async def behavioral_pattern_agent(state: FraudDetectionState) -> FraudDetection
                 {{ "signal_type": "behavior_anomaly", "description": "string", "severity": "low|medium|high", "value": "string" }}
             ],
             "reasoning": "string",
-            "confidence": float
+            "confidence": float (0-1)
         }}
         """,
             ),
@@ -76,7 +78,7 @@ async def behavioral_pattern_agent(state: FraudDetectionState) -> FraudDetection
         signals = [AgentSignal(**s) for s in response.get("signals", [])]
 
         evidence = AgentEvidence(
-            agent_name="Behavioral Pattern Agent",
+            agent_name=BEHAVIORAL_PATTERN_AGENT_NAME,
             signals=signals,
             reasoning=response.get("reasoning", "Detección de anomalías basada en historial"),
             confidence=response.get("confidence", 0.7),

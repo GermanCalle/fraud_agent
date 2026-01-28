@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_tavily import TavilySearch
 
 from app.core.config import settings
+from app.core.constants import EXTERNAL_THREAT_INTEL_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
 from app.models.schemas import AgentEvidence, AgentSignal, ExternalCitation, FraudDetectionState
 
@@ -32,7 +33,8 @@ async def external_threat_intel_agent(state: FraudDetectionState) -> FraudDetect
     try:
         search_results = await search.ainvoke(query)
 
-        llm = get_llm(temperature=0)
+        model = MAP_AGENT_MODEL[EXTERNAL_THREAT_INTEL_AGENT_NAME]
+        llm = get_llm(model)
         prompt = ChatPromptTemplate.from_messages(
             [
                 (
@@ -54,7 +56,7 @@ async def external_threat_intel_agent(state: FraudDetectionState) -> FraudDetect
                     {{ "url": "string", "summary": "string" }}
                 ],
                 "reasoning": "string",
-                "confidence": float
+                "confidence": float (0-1)
             }}
             """,
                 ),

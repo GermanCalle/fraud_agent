@@ -164,3 +164,10 @@ class FraudDetectionState(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class TransactionSummary(BaseModel):
+    """AI generated summary of the transaction audit"""
+
+    transaction_id: str
+    summary_text: str

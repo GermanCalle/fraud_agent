@@ -1,5 +1,10 @@
 from langchain_core.prompts import ChatPromptTemplate
 
+from app.core.constants import (
+    DEBATE_AGENT_PRO_CUSTOMER_NAME,
+    DEBATE_AGENT_PRO_FRAUD_NAME,
+    MAP_AGENT_MODEL,
+)
 from app.core.llm import get_llm
 from app.models.schemas import AgentEvidence, FraudDetectionState
 
@@ -12,7 +17,9 @@ async def debate_agents(state: FraudDetectionState) -> FraudDetectionState:
 
     evidences_text = "\n".join([f"- {ev.agent_name}: {ev.reasoning}" for ev in state.evidences])
 
-    llm = get_llm(temperature=0.7)
+    model = MAP_AGENT_MODEL[DEBATE_AGENT_PRO_FRAUD_NAME]  # both use the same model
+
+    llm = get_llm(model)
 
     fraud_prompt = ChatPromptTemplate.from_messages(
         [
@@ -49,7 +56,7 @@ async def debate_agents(state: FraudDetectionState) -> FraudDetectionState:
 
         state.evidences.append(
             AgentEvidence(
-                agent_name="Debate Agent (Pro-Fraud)",
+                agent_name=DEBATE_AGENT_PRO_FRAUD_NAME,
                 reasoning=fraud_argument.content,
                 confidence=0.5,
             )
@@ -57,7 +64,7 @@ async def debate_agents(state: FraudDetectionState) -> FraudDetectionState:
 
         state.evidences.append(
             AgentEvidence(
-                agent_name="Debate Agent (Pro-Customer)",
+                agent_name=DEBATE_AGENT_PRO_CUSTOMER_NAME,
                 reasoning=customer_argument.content,
                 confidence=0.5,
             )

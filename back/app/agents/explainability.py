@@ -1,6 +1,7 @@
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from app.core.constants import EXPLAINABILITY_AGENT_NAME, MAP_AGENT_MODEL
 from app.core.llm import get_llm
 from app.models.schemas import FraudDetectionState
 
@@ -11,7 +12,8 @@ async def explainability_agent(state: FraudDetectionState) -> FraudDetectionStat
     """
     print("📝 [Explainability Agent] Generando explicaciones y reporte de auditoría...")
 
-    llm = get_llm(temperature=0.3)
+    model = MAP_AGENT_MODEL[EXPLAINABILITY_AGENT_NAME]
+    llm = get_llm(model)
 
     signals_text = "\n".join(state.signals)
 
